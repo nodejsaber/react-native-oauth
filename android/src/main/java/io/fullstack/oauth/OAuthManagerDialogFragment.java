@@ -5,10 +5,12 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -93,7 +95,8 @@ public class OAuthManagerDialogFragment extends DialogFragment implements Advanc
         RelativeLayout rootView = new RelativeLayout(context);
 
         mProgressBar = new ProgressBar(context);
-        RelativeLayout.LayoutParams progressParams = new RelativeLayout.LayoutParams(convertDpToPixel(50f,context),convertDpToPixel(50f,context));
+        int dp50 = convertDpToPixel(50f, context);
+        RelativeLayout.LayoutParams progressParams = new RelativeLayout.LayoutParams(dp50, dp50);
         progressParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         mProgressBar.setLayoutParams(progressParams);
         mProgressBar.setIndeterminate(true);
@@ -101,26 +104,20 @@ public class OAuthManagerDialogFragment extends DialogFragment implements Advanc
         getDialog().setCanceledOnTouchOutside(true);
         rootView.setLayoutParams(rootViewLayoutParams);
 
-        // mWebView = (AdvancedWebView) rootView.findViewById(R.id.webview);
         Log.d(TAG, "Creating webview");
         mWebView = new AdvancedWebView(context);
+        mWebView.setDesktopMode(false);
 //        mWebView.setId(WEBVIEW_TAG);
         mWebView.setListener(this, this);
         mWebView.setVisibility(View.VISIBLE);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
-        // mWebView.getSettings().setUserAgentString("Mozilla/5.0 Google");
-        mWebView.getSettings().setUserAgentString("Mozilla/5.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.98 Mobile Safari/537.36");
+        mWebView.getSettings().setUserAgentString("Mozilla/5.0 Google");
+        // mWebView.getSettings().setUserAgentString("Mozilla/5.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.98 Mobile Safari/537.36");
         // String userAgent = new WebView(mReactContext.getApplicationContext()).getSettings().getUserAgentString();
         // mWebView.getSettings().setUserAgentString(userAgent);
 
         LayoutParams layoutParams = this.getFullscreenLayoutParams(context);
-        //new LayoutParams(
-        //   LayoutParams.FILL_PARENT,
-        //   DIALOG_HEIGHT
-        // );
-        // mWebView.setLayoutParams(layoutParams);
-
         rootView.addView(mWebView, layoutParams);
         rootView.addView(mProgressBar,progressParams);
 
@@ -140,43 +137,44 @@ public class OAuthManagerDialogFragment extends DialogFragment implements Advanc
         return rootView;
     }
 
-    private LayoutParams getFullscreenLayoutParams(Context context) {
-      WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-      // DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-      Display display = wm.getDefaultDisplay();
-      int realWidth;
-      int realHeight;
-
-      if (Build.VERSION.SDK_INT >= 17){
-          //new pleasant way to get real metrics
-          DisplayMetrics realMetrics = new DisplayMetrics();
-          display.getRealMetrics(realMetrics);
-          realWidth = realMetrics.widthPixels;
-          realHeight = realMetrics.heightPixels;
-
-      } else if (Build.VERSION.SDK_INT >= 14) {
-          //reflection for this weird in-between time
-          try {
-              Method mGetRawH = Display.class.getMethod("getRawHeight");
-              Method mGetRawW = Display.class.getMethod("getRawWidth");
-              realWidth = (Integer) mGetRawW.invoke(display);
-              realHeight = (Integer) mGetRawH.invoke(display);
-          } catch (Exception e) {
-              //this may not be 100% accurate, but it's all we've got
-              realWidth = display.getWidth();
-              realHeight = display.getHeight();
-              Log.e("Display Info", "Couldn't use reflection to get the real display metrics.");
+    //  get full screen layout instead old function
+        private LayoutParams getFullscreenLayoutParams(Context context) {
+          int x, y, orientation = context.getResources().getConfiguration().orientation;
+          WindowManager wm = ((WindowManager) 
+              context.getSystemService(Context.WINDOW_SERVICE));
+          Display display = wm.getDefaultDisplay();
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+              Point screenSize = new Point();
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                  display.getRealSize(screenSize);
+                  x = screenSize.x;
+                  y = screenSize.y;
+              } else {
+                  display.getSize(screenSize);
+                  x = screenSize.x;
+                  y = screenSize.y;
+              }
+          } else {
+              x = display.getWidth();
+              y = display.getHeight();
           }
+      
+          int width = getWidth(x, y, orientation);
+          int height = getHeight(x, y, orientation);
+          Log.w(TAG, "width: " + width + " height: " + height + " resolution: " + height /width);
 
-      } else {
-          //This should be close, as lower API devices should not have window navigation bars
-          realWidth = display.getWidth();
-          realHeight = display.getHeight();
+      // return new LayoutParams(width, height - convertDpToPixel(50f,context));
+      return new LayoutParams(width, height);
       }
-
-      return new LayoutParams(realWidth, realHeight-convertDpToPixel(50f,context));
-    }
-
+    
+      private int getWidth(int x, int y, int orientation) {
+          return orientation == Configuration.ORIENTATION_PORTRAIT ? x : y;
+      }
+      
+      private int getHeight(int x, int y, int orientation) {
+          return orientation == Configuration.ORIENTATION_PORTRAIT ? y : x;
+      }
+    
 
     private void setupWebView(AdvancedWebView webView) {
       webView.setWebViewClient(new WebViewClient() {
