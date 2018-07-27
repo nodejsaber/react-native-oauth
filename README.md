@@ -1,5 +1,11 @@
 ## react-native-oauth
 
+### This Fork resolve some problems with: 
+  1. ~~modal view in full screen mode (Resolved)~~
+  1. native bugs
+  1. (TODO) webview session cached
+  
+
 The `react-native-oauth` library provides an interface to OAuth 1.0 and OAuth 2.0 providers with support for the following providers for React Native apps:
 
 * Twitter
