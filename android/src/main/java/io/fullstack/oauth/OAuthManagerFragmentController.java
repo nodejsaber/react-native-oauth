@@ -285,6 +285,7 @@ public class OAuthManagerFragmentController {
       runOnMainThread(new Runnable() {
         @Override
         public void run() {
+          Log.e(TAG, "OAuth url run: " + url);
           if (url == null) {
             mCtrl.onError(-1, "No url", "");
             return;

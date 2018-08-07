@@ -44,6 +44,13 @@ export default class OAuthManager {
     return promisify('authorize')(provider, options);
   }
 
+  refreshauthen(provider, opts={}) {
+    const options = Object.assign({}, this._options, opts, {
+      app_name: this.appName
+    })
+    return promisify('refreshauthen')(provider, options);
+  }
+
   savedAccounts(opts={}) {
     // const options = Object.assign({}, this._options, opts, {
       // app_name: this.appName

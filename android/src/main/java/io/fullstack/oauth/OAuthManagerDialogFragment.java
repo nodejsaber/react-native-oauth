@@ -109,6 +109,7 @@ public class OAuthManagerDialogFragment extends DialogFragment implements Advanc
         mWebView.setDesktopMode(false);
 //        mWebView.setId(WEBVIEW_TAG);
         mWebView.setListener(this, this);
+        // mWebView.setCookiesEnabled(false);
         mWebView.setVisibility(View.VISIBLE);
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setDomStorageEnabled(true);
