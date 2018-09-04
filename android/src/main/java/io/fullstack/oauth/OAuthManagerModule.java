@@ -115,10 +115,10 @@ class OAuthManagerModule extends ReactContextBaseJavaModule {
       Activity activity = this.getCurrentActivity();
       FragmentManager fragmentManager = activity.getFragmentManager();
       String callbackPrefix =  "http://localhost/";
-      final Boolean _useHttps = (Boolean) cfg.get("use_https");
+      final Boolean useHttps = "true".equals(cfg.get("use_https"));
       
-      Log.d(TAG, "_useHttps" + _useHttps);
-      if (_useHttps == true) {
+      // Log.d(TAG, "_useHttps: " + useHttps);
+      if (useHttps == true) {
         callbackPrefix =  "https://localhost/";
       }
 
